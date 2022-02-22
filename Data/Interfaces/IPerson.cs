@@ -10,7 +10,7 @@
 
         ushort BirthYear { get; set; }
 
-        string GetFullName()
+        public string GetFullName()
         {
             var fullName = $"{LastName} {FirstName}";
             if (Patronymic is null)
