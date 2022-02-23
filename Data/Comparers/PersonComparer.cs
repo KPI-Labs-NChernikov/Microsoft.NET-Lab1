@@ -1,8 +1,8 @@
-﻿using Data.Interfaces;
+﻿using Data.Models;
 
 namespace Data.Comparers
 {
-    public class PersonComparer<T> : ModelEqualityComparer<T> where T : IPerson
+    public class PersonComparer<T> : ModelEqualityComparer<T> where T : Person
     {
         public override bool Equals(T x, T y)
         {

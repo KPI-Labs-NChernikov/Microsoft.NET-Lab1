@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Business.TempModels;
+using Data;
 using Data.Comparers;
 using Data.Interfaces;
 using Data.Models;
@@ -8,11 +9,11 @@ using System.Linq;
 
 namespace Business
 {
-    public class Queries
+    public class FilmographyService
     {
         private readonly Context _context;
 
-        public Queries(Context context)
+        public FilmographyService(Context context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context), "Context cannot be null");
         }
@@ -31,11 +32,11 @@ namespace Business
          * 8) Find all actors that fullname contains $name
          * 9) Get the joined spectacles with roles and actors, grouped by genre, sorted by genre name, spectacle name (with GroupJoin)
          * 10) Get all actors that were directors at least in one movie. Sort by fullname, then - year of birth
-         * 11) Get all actors that starred in at least one movie or spectagle with genre $id. Sort by fullname, then - year of birth
+         * 11) Get all actors that starred in at least one movie or spectacle with genre $id. Sort by fullname, then - year of birth
          * 12) Get all films by director whose fullname contains $name. Sort by year
          * 13) Find all films and spectacles by name
          * 14) Get genres with quantity of movies and spectacles of them. Sort by quantity of movies, then - spectacles
-         * 15) Get all genres that were used at least in one movie or spectacle (with Distinct)
+         * 15) Get all genres that were used at least in one movie (with Distinct)
         */
 
         /// <summary>
@@ -46,7 +47,9 @@ namespace Business
         {
             return _context.People
                 .Where(p => p is Actor)
-                .Select(p => p as Actor);
+                .Select(p => p as Actor)
+                .OrderBy(a => a.GetFullName())
+                .ThenByDescending(a => a.BirthYear);
         }
 
         /// <summary>
@@ -84,8 +87,8 @@ namespace Business
         /// <summary>
         /// 4) Get all actors joined with their roles, then with films/spectacles from roles are.
         /// </summary>
-        /// <returns>IEnumerable of Grouping with the key - actor and value - tuple of roles and performances</returns>
-        public IEnumerable<IGrouping<Actor, (Actor Actor, string Role, bool IsMainRole, IPerformance Performance)>> GetActorsWithFilmography()
+        /// <returns>IEnumerable of ActorWithFilmography, that contains Actors' names and filmography for each of them</returns>
+        public IEnumerable<ActorWithFilmography> GetActorsWithFilmography()
         {
             var performances = _context.ActorsOnMovies
                 .Join(_context.Movies, 
@@ -106,9 +109,14 @@ namespace Business
                 .Select(p => (p.Actor, p.Role, p.IsMainRole, p.Performance))
                 .OrderByDescending(t => t.IsMainRole)
                 .ThenBy(t => t.Role)
-                .GroupBy(t => t.Actor, new ActorEqualityComparer())
-                .OrderBy(g => (g.Key as IPerson).GetFullName())
-                .ThenBy(g => g.Key.BirthYear);
+                .GroupBy(t => t.Actor, 
+                (k, v) => new ActorWithFilmography()
+                {
+                    Actor = k,
+                    Filmography = v.Select(t => (t.Role, t.IsMainRole, t.Performance))
+                }, new ActorEqualityComparer())
+                .OrderBy(g => g.Actor.GetFullName())
+                .ThenBy(g => g.Actor.BirthYear);
             return actors;
         }
 
@@ -133,30 +141,34 @@ namespace Business
         /// <summary>
         /// 6) Get movies grouped by genres. Sort by name of the genre
         /// </summary>
-        /// <returns></returns>
+        /// <returns>IEnumerable of groups with genres and movies</returns>
         public IEnumerable<IGrouping<Genre, Movie>> GetMoviesGroupedByGenres()
         {
             return from movie in _context.Movies
                    join genre in _context.Genres
                        on movie.GenreId equals genre.Id
                    group movie by genre into movieGroup
-                   orderby movieGroup.Key
+                   orderby movieGroup.Key.Id
                    select movieGroup;
         }
 
         /// <summary>
-        /// 7) Get top-N actors, sorted by quantity of main roles both in movies and speactacles
+        /// 7) Get top-N actors, sorted by quantity of main roles both in movies and speactacles.
         /// </summary>
         /// <param name="quantity">needed quantity (top N)</param>
-        /// <returns></returns>
-        public IEnumerable<(Actor, int mainRolesQuantity)> GetTopMainRolesPopularActors(int quantity)
+        /// <returns>IEnumerable of tuple with actors and quantity of theire main roles</returns>
+        public IEnumerable<(Actor Actor, int mainRolesQuantity)> GetTopMainRolesPopularActors(int quantity)
         {
             var actors = from a in _context.People
                          where a is Actor
                          select a as Actor;
+
+            var filteredSpectacleRoles = from aos in _context.ActorsOnSpectacles
+                                         where aos.IsMainRole
+                                         select aos;
             var spectaclesMainRoles = from a in actors
-                                              join aos in _context.ActorsOnSpectacles
-                                                on a.Id equals aos.Id into j
+                                              join aos in filteredSpectacleRoles
+                                                on a.Id equals aos.ActorId into j
                                               from subaos in j.DefaultIfEmpty(null)
                                               select new
                                               {
@@ -164,14 +176,56 @@ namespace Business
                                                   RoleInSpectacle = subaos
                                               };
             var spectaclesMainRolesQuantity = from a in spectaclesMainRoles
-                                              group spectaclesMainRoles by a.Actor.Id into spectaclesGroup
+                                              group a by a.Actor into spectaclesGroup
                                               select new
                                               {
                                                   Actor = spectaclesGroup.Key,
-                                                  SpectaclesQuantity = (spectaclesGroup.Count() == 1 && spectaclesGroup.First() is null)
+                                                  SpectaclesMainRolesQuantity = (spectaclesGroup.Count() == 1 && spectaclesGroup.First().RoleInSpectacle is null)
                                                   ? 0 : spectaclesGroup.Count()
                                               };
-            throw new NotImplementedException();
+
+            var filteredMovieRoles = from aom in _context.ActorsOnMovies
+                                         where aom.IsMainRole
+                                         select aom;
+            var moviesMainRoles = from a in actors
+                                      join aom in filteredMovieRoles
+                                        on a.Id equals aom.ActorId into j
+                                      from subaom in j.DefaultIfEmpty(null)
+                                      select new
+                                      {
+                                          Actor = a,
+                                          RoleInMovie = subaom
+                                      };
+            var moviesMainRolesQuantity = from a in moviesMainRoles
+                                          group a by a.Actor into moviesGroup
+                                              select new
+                                              {
+                                                  Actor = moviesGroup.Key,
+                                                  MoviesMainRolesQuantity = (moviesGroup.Count() == 1 && moviesGroup.First().RoleInMovie is null)
+                                                  ? 0 : moviesGroup.Count()
+                                              };
+
+            var mainRolesQuantity = from spec in spectaclesMainRolesQuantity
+                                    join mov in moviesMainRolesQuantity
+                                        on spec.Actor.Id equals mov.Actor.Id
+                                    select (spec.Actor, spec.SpectaclesMainRolesQuantity + mov.MoviesMainRolesQuantity);
+            return (from actorMainRolesQuantity in mainRolesQuantity
+                   orderby actorMainRolesQuantity.Item2 descending
+                   select actorMainRolesQuantity).Take(quantity);
+        }
+
+        /// <summary>
+        /// 8) Find all actors that fullname contains $name
+        /// </summary>
+        /// <param name="fullName"></param>
+        /// <returns></returns>
+        public IEnumerable<Actor> FindActorByName(string name)
+        {
+            var actors = _context.People
+                .Where(p => p is Actor)
+                .Select(a => a as Actor);
+            return actors
+                .Where(a => a.GetFullName().ToLower().Contains(name.ToLower()));
         }
     }
 }

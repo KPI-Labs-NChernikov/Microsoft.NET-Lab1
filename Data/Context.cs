@@ -6,7 +6,7 @@ namespace Data
 {
     public class Context
     {
-        public ICollection<IPerson> People { get; set; } = new List<IPerson>();
+        public ICollection<Person> People { get; set; } = new List<Person>();
 
         public ICollection<Genre> Genres { get; set; } = new List<Genre>();
 

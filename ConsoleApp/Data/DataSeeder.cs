@@ -1,5 +1,4 @@
 ﻿using Data;
-using Data.Interfaces;
 using Data.Models;
 using System;
 using System.Collections.Generic;
@@ -50,6 +49,10 @@ namespace ConsoleApp.Data
                 new Genre()
                 {
                     Name = "Western"
+                },
+                new Genre()
+                {
+                    Name = "Comedy"
                 }
             };
             for (int i = 0; i < genres.Count; i++)
@@ -88,7 +91,7 @@ namespace ConsoleApp.Data
 
         private void SeedPeople()
         {
-            var people = new List<IPerson>()
+            var people = new List<Person>()
             {
                 new Actor() //1
                 {
@@ -211,6 +214,14 @@ namespace ConsoleApp.Data
                     FirstName = "Sergio",
                     LastName = "Leone",
                     BirthYear = 1929
+                },
+                new Actor() //18
+                {
+                    FirstName = "Volodymyr",
+                    LastName = "Velyanyk",
+                    Patronymic = "Volodymyrovych",
+                    BirthYear = 1970,
+                    TheatricalCharacter = "Roles of an acute plan"
                 }
             };
             for (int i = 0; i < people.Count; i++)
@@ -281,13 +292,129 @@ namespace ConsoleApp.Data
             }
         }
 
+        private void SeedActorsOnSpectacles()
+        {
+            var aos = new List<ActorOnSpectacle>()
+            {
+                new ActorOnSpectacle()
+                {
+                    SpectacleId = 1,
+                    ActorId = 5,
+                    Role = "Raksha",
+                    IsMainRole = true,
+                },
+                new ActorOnSpectacle()
+                {
+                    SpectacleId = 2,
+                    ActorId = 5,
+                    Role = "Paraska",
+                    IsMainRole = false,
+                },
+                new ActorOnSpectacle()
+                {
+                    SpectacleId = 2,
+                    ActorId = 18,
+                    Role = "Omelko",
+                    IsMainRole = true,
+                },
+                new ActorOnSpectacle()
+                {
+                    SpectacleId = 3,
+                    ActorId = 6,
+                    Role = "Jeshua",
+                    IsMainRole = true
+                }
+            };
+            for (int i = 0; i < aos.Count; i++)
+            {
+                aos[i].Id = i + 1;
+                Context.ActorsOnSpectacles.Add(aos[i]);
+            }
+        }
+
+        private void SeedActorsOnMovies()
+        {
+            var aom = new List<ActorOnMovie>()
+            {
+                new ActorOnMovie()
+                {
+                    MovieId = 1,
+                    ActorId = 6,
+                    Role = "Orest",
+                    IsMainRole = true,
+                },
+                new ActorOnMovie()
+                {
+                    MovieId = 2,
+                    ActorId = 2,
+                    Role = "Billy \"Bronco Billy\" McCoy",
+                    IsMainRole = true
+                },
+                new ActorOnMovie()
+                {
+                    MovieId = 2,
+                    ActorId = 1,
+                    Role = "Antoinette Lily",
+                    IsMainRole = false
+                },
+                new ActorOnMovie()
+                {
+                    MovieId = 3,
+                    ActorId = 9,
+                    Role = "Jack Dawson",
+                    IsMainRole = true
+                },
+                new ActorOnMovie()
+                {
+                    MovieId = 4,
+                    ActorId = 9,
+                    Role = "Jordan Belfort",
+                    IsMainRole = true
+                },
+                new ActorOnMovie()
+                {
+                    MovieId = 5,
+                    ActorId = 2,
+                    Role = "Man with No Name",
+                    IsMainRole = true
+                },
+                new ActorOnMovie()
+                {
+                    MovieId = 6,
+                    ActorId = 10,
+                    Role = "Legolas Greenleaf",
+                    IsMainRole = true
+                },
+                new ActorOnMovie()
+                {
+                    MovieId = 7,
+                    ActorId = 10,
+                    Role = "Will Turner",
+                    IsMainRole = false
+                },
+                new ActorOnMovie()
+                {
+                    MovieId = 7,
+                    ActorId = 11,
+                    Role = "Jack Sparrow",
+                    IsMainRole = true
+                }
+            };
+            for (int i = 0; i < aom.Count; i++)
+            {
+                aom[i].Id = i + 1;
+                Context.ActorsOnMovies.Add(aom[i]);
+            }
+        }
+
         public void SeedData()
         {
             SeedGenres();
             SeedSpectacles();
             SeedPeople();
             SeedMovies();
-            //TODO: write and call SeedActorsOnMovies(); SeedActorsOnSpectacles();
+            SeedActorsOnSpectacles();
+            SeedActorsOnMovies();
         }
     }
 }
