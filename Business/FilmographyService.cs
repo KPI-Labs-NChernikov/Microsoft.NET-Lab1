@@ -30,13 +30,13 @@ namespace Business
          * 6) Get movies grouped by genres. Sort by name of the genre
          * 7) Get top-N actors, sorted by quantity of main roles both in movies and speactacles
          * 8) Find all actors that fullname contains $name
-         * 9) Get the joined spectacles with roles and actors, grouped by genre, sorted by genre name, spectacle name (with GroupJoin)
-         * 10) Get all actors that were directors at least in one movie. Sort by fullname, then - year of birth
+         * 9) Get genres that were used both in movies and spectacles
+         * 10) Get all actors that were directors at least in one movie. Sort by year of birth
          * 11) Get all actors that starred in at least one movie or spectacle with genre $id. Sort by fullname, then - year of birth
-         * 12) Get all films by director whose fullname contains $name. Sort by year
-         * 13) Find all films and spectacles by name
+         * 12) Find all films by director whose fullname contains $name. Sort by film year descending
+         * 13) Find all films and spectacles by name. Group by type - spectacle or movie
          * 14) Get genres with quantity of movies and spectacles of them. Sort by quantity of movies, then - spectacles
-         * 15) Get all genres that were used at least in one movie (with Distinct)
+         * 15) Find spectacles of genre that name starts with $nameStart
         */
 
         /// <summary>
@@ -226,6 +226,193 @@ namespace Business
                 .Select(a => a as Actor);
             return actors
                 .Where(a => a.GetFullName().ToLower().Contains(name.ToLower()));
+        }
+
+        /// <summary>
+        /// 9) Get genres that were used both in movies and spectacles
+        /// </summary>
+        /// <returns>IEnumerable of Genre with genres that were used both in movies and spectacles</returns>
+        public IEnumerable<Genre> GetUniversalGenres()
+        {
+            var comparer = new GenreEqualityComparer();
+            var movieGenres = _context.Movies
+                .Select(m => m.GenreId)
+                .Join(_context.Genres,
+                id => id,
+                g => g.Id,
+                (id, g) => new Genre()
+                {
+                    Id = id,
+                    Name = g.Name
+                })
+                .Distinct(comparer);
+
+            var spectaclesGenres = _context.Spectacles
+                .Select(s => s.GenreId)
+                .Join(_context.Genres,
+                id => id,
+                g => g.Id,
+                (id, g) => new Genre()
+                {
+                    Id = id,
+                    Name = g.Name
+                })
+                .Distinct(comparer);
+
+            return movieGenres
+                .Intersect(spectaclesGenres, comparer);
+        }
+
+        /// <summary>
+        /// 10) Get all actors that were directors at least in one movie. Sort by year of birth
+        /// </summary>
+        /// <returns>IEnumerable of Actor that contains actors that were directors too, sorted by year of birth</returns>
+        public IEnumerable<Actor> GetActorsDirectors()
+        {
+            var actors = _context.People
+                .Where(p => p is Actor)
+                .Select(a => a as Actor);
+            return actors
+                .Where(a => _context.Movies
+                    .Any(m => m.DirectorId == a.Id))
+                .OrderBy(a => a.BirthYear);
+        }
+
+        /// <summary>
+        /// 11) Get all actors that starred in at least one movie or spectacle with genre $genreId. Sort by fullname, then - year of birth
+        /// </summary>
+        /// <returns>IEnumerable of Actor that contains actors that starred in at least one movie or spectacle with genre $genreId.</returns>
+        public IEnumerable<Actor> GetActorsByGenre(int genreId)
+        {
+            var allActors = from actor in _context.People
+                         where actor is Actor
+                         select actor as Actor;
+            var spectacleActorsIds = from sp in _context.Spectacles
+                             where sp.GenreId == genreId
+                             join aos in _context.ActorsOnSpectacles
+                             on sp.Id equals aos.SpectacleId
+                             select aos.ActorId;
+            var movieActorsIds = from mov in _context.Movies
+                           where mov.GenreId == genreId
+                           join aom in _context.ActorsOnMovies
+                             on mov.Id equals aom.MovieId
+                           select aom.ActorId;
+            var actorsIds = spectacleActorsIds
+                .Union(movieActorsIds);
+            return from actorId in actorsIds
+                   join actor in allActors
+                   on actorId equals actor.Id
+                   select actor;
+        }
+
+        /// <summary>
+        /// 12) Find all films by director whose fullname contains $name. Sort by film year descending
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>IEnumerable of Tuple of Movie and Person (its' director) that contains all films 
+        /// by director whose fullname contains $name,
+        /// sorted by film year descending</returns>
+        public IEnumerable<(Movie Movie, Person Director)> FindMoviesByDirectorName(string name)
+        {
+            return from mov in _context.Movies
+                   join director in _context.People
+                   on mov.DirectorId equals director.Id
+                   where director.GetFullName().ToLower()
+                        .Contains(name.ToLower())
+                   orderby mov.Year descending
+                   select (mov, director);
+        }
+
+        /// <summary>
+        /// 13) Find all films and spectacles by name. Group by type - spectacle or movie
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>IEnumerable of Grouping of Type and its' performaances</returns>
+        public IEnumerable<IGrouping<Type, IPerformance>> FindPerformancesByName(string name)
+        {
+            return _context.Movies
+                .Select(m => m as IPerformance)
+                .Concat(_context.Spectacles
+                    .Select(s => s as IPerformance))
+                .Where(p => p.Name.ToLower().Contains(name.ToLower()))
+                .GroupBy(p => p.GetType())
+                .OrderBy(g => g.Key.Name);
+        }
+
+        /// <summary>
+        /// 14) Get genres with quantity of movies and spectacles of them. 
+        /// Sort by quantity of movies desc., then - spectacles desc.
+        /// </summary>
+        /// <returns>IEnumerable of GenreStats</returns>
+        public IEnumerable<GenreStats> GetGenresStats()
+        {
+            var spectacles = from genre in _context.Genres
+                                      join sp in _context.Spectacles
+                                        on genre.Id equals sp.GenreId into j
+                                      from subsp in j.DefaultIfEmpty(null)
+                                      select new
+                                      {
+                                          Genre = genre,
+                                          Spectacle = subsp
+                                      };
+            var spectaclesStats = from s in spectacles
+                                              group s by s.Genre into spectaclesGroup
+                                              select new
+                                              {
+                                                  Genre = spectaclesGroup.Key,
+                                                  SpectaclesQuantity = (spectaclesGroup.Count() == 1 && spectaclesGroup.First().Spectacle is null)
+                                                  ? 0 : spectaclesGroup.Count()
+                                              };
+
+            var movies = from genre in _context.Genres
+                             join mov in _context.Movies
+                               on genre.Id equals mov.GenreId into j
+                             from submov in j.DefaultIfEmpty(null)
+                             select new
+                             {
+                                 Genre = genre,
+                                 Movie = submov
+                             };
+            var moviesStats = from movie in movies
+                                  group movie by movie.Genre into moviesGroup
+                                  select new
+                                  {
+                                      Genre = moviesGroup.Key,
+                                      MoviesQuantity = (moviesGroup.Count() == 1 && moviesGroup.First().Movie is null)
+                                      ? 0 : moviesGroup.Count()
+                                  };
+
+            var stats = from sp in spectaclesStats
+                        join mov in moviesStats
+                            on sp.Genre.Id equals mov.Genre.Id
+                        orderby mov.MoviesQuantity descending, sp.SpectaclesQuantity descending
+                        select new GenreStats()
+                        {
+                            Genre = sp.Genre,
+                            SpectaclesQuantity = sp.SpectaclesQuantity,
+                            MoviesQuantity = mov.MoviesQuantity
+                        };
+            return stats;
+        }
+
+        /// <summary>
+        /// 15) Find spectacles of genre that name starts with $nameStart
+        /// </summary>
+        /// <param name="nameStart"></param>
+        /// <returns>IEnumerable of SpectacleExtended that contains spectacles of genre (with genre object)
+        /// that name starts with $nameStart</returns>
+        public IEnumerable<SpectacleExtended> FindSpectaclesByGenreNameStart(string nameStart)
+        {
+            return from spec in _context.Spectacles
+                   join genre in _context.Genres
+                   on spec.GenreId equals genre.Id
+                   where genre.Name.ToLower().StartsWith(nameStart.ToLower())
+                   select new SpectacleExtended()
+                   {
+                       Id = spec.Id,
+                       Name = spec.Name,
+                       Genre = genre
+                   };
         }
     }
 }
