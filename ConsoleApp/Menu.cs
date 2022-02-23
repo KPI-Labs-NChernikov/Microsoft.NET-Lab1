@@ -16,11 +16,11 @@ namespace ConsoleApp
         {
             if (Items is not null && Items.Any())
             {
+                Console.Clear();
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 if (Header is not null)
                 {
-                    Console.WriteLine(Header);
-                    Console.WriteLine();
+                    HelperMethods.PrintHeader(Header);
                 }
                 var name = !string.IsNullOrEmpty(Name) ? Name : "item";
                 Console.WriteLine($"Please, select the {name}:");
@@ -46,6 +46,7 @@ namespace ConsoleApp
                     selected--;
                     Console.Clear();
                     Items.ElementAt(selected).Action?.Invoke();
+                    Console.Clear();
                     Print();
                 }
             }

@@ -64,7 +64,7 @@ namespace Business
         }
 
         /// <summary>
-        /// 4) Get all actors joined with their roles, then with films/spectacles from roles are.
+        /// 4) Get all actors joined with their roles, then with films/spectacles.
         /// </summary>
         /// <returns>IEnumerable of ActorWithFilmography, that contains Actors' names and filmography for each of them</returns>
         public IEnumerable<ActorWithFilmography> GetActorsWithFilmography()
@@ -285,7 +285,7 @@ namespace Business
         }
 
         /// <summary>
-        /// 12) Find all films by director whose fullname contains $name. Sort by film year descending
+        /// 12) Find all films by director whose full name contains $name. Sort by film year descending
         /// </summary>
         /// <param name="name"></param>
         /// <returns>IEnumerable of Tuple of Movie and Person (its' director) that contains all films 
