@@ -18,27 +18,6 @@ namespace Business
             _context = context ?? throw new ArgumentNullException(nameof(context), "Context cannot be null");
         }
 
-        /* TODO: write queries:
-         * 1) Get all actors. Sort by fullname, then - year of birth
-         * 2) Get all films starting from $year. Sort by year descending, then by name ascending
-         * 3) Get all films and spectacles where actor with $actorId starred in one IEnumerable. Sort by: name
-         * 4) Get all actors joined with their roles, then with films/spectacles from roles are.
-         * sort by: for actors: fullname, year of birth; for roles: main or not, then name
-         * 5) Get actors on roles by the $spectacleId. Should be saved:
-         * spectacle info, is role main or not, actor's full name
-         * sort by: type of the role
-         * 6) Get movies grouped by genres. Sort by name of the genre
-         * 7) Get top-N actors, sorted by quantity of main roles both in movies and speactacles
-         * 8) Find all actors that fullname contains $name
-         * 9) Get genres that were used both in movies and spectacles
-         * 10) Get all actors that were directors at least in one movie. Sort by year of birth
-         * 11) Get all actors that starred in at least one movie or spectacle with genre $id. Sort by fullname, then - year of birth
-         * 12) Find all films by director whose fullname contains $name. Sort by film year descending
-         * 13) Find all films and spectacles by name. Group by type - spectacle or movie
-         * 14) Get genres with quantity of movies and spectacles of them. Sort by quantity of movies, then - spectacles
-         * 15) Find spectacles of genre that name starts with $nameStart
-        */
-
         /// <summary>
         /// 1) Get all actors. Sort by full name, then - year of birth
         /// </summary>
