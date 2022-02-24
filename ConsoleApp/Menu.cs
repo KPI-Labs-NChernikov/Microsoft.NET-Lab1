@@ -12,7 +12,7 @@ namespace ConsoleApp
 
         public IEnumerable<(string Text, Action Action)> Items { get; set; }
 
-        public void Print()
+        public void Print(bool closeAfter = false)
         {
             if (Items is not null && Items.Any())
             {
@@ -47,7 +47,8 @@ namespace ConsoleApp
                     Console.Clear();
                     Items.ElementAt(selected).Action?.Invoke();
                     Console.Clear();
-                    Print();
+                    if (!closeAfter)
+                        Print();
                 }
             }
             Console.ResetColor();

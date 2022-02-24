@@ -9,7 +9,7 @@ namespace ConsoleApp
 {
     internal class Program
     {
-        private static Context _context;
+        internal static Context Context { get; private set; }
 
         internal static FilmographyService Service { get; private set; }
 
@@ -17,20 +17,20 @@ namespace ConsoleApp
 
         static void Main(string[] args)
         {
-            _context = new Context();
-            var seeder = new DataSeeder(_context);
+            Context = new Context();
+            var seeder = new DataSeeder(Context);
             seeder.SeedData();
-            Service = new FilmographyService(_context);
+            Service = new FilmographyService(Context);
             IEnumerable<(string, Action)> mainMenuItems = new List<(string, Action)>()
             {
                 ("Get all actors. Sort by full name, then - year of birth", QueriesPrinter.GetActors),
                 ("Get all films starting from any year. Sort by year descending, then by name ascending", QueriesPrinter.GetMoviesFromYear),
-                ("Get all films and spectacles where actor starred in one IEnumerable. Sort by: name", null),
-                ("Get all actors joined with their roles, then with films/spectacles", null),
-                ("Get the cast of the spectacle. sort by: type of the role", null),
-                ("Get movies grouped by genres. Sort by name of the genre", null),
-                ("Get top-N actors. Sort by quantity of main roles both in movies and speactacles.", null),
-                ("Find actors by fullname", null),
+                ("Get all films and spectacles where actor starred in one IEnumerable. Sort by: name", QueriesPrinter.GetActorPerformances),
+                ("Get all actors joined with their roles, then with films/spectacles", QueriesPrinter.GetActorsWithFilmography),
+                ("Get the cast of the spectacle. sort by: type of the role", QueriesPrinter.GetSpectacleCast),
+                ("Get movies grouped by genres. Sort by name of the genre", QueriesPrinter.GetMoviesGroupedByGenres),
+                ("Get top-N actors. Sort by quantity of main roles both in movies and speactacles.", QueriesPrinter.GetTopMainRolesPopularActors),
+                ("Find actors by fullname", QueriesPrinter.FindActorByName),
                 ("Get genres that were used both in movies and spectacles", null),
                 ("Get all actors that were directors at least in one movie. Sort by year of birth", null),
                 ("Get all actors that starred in at least one movie or spectacle with given genre. Sort by fullname, then - year of birth", null),

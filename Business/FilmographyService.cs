@@ -136,7 +136,7 @@ namespace Business
         /// </summary>
         /// <param name="quantity">needed quantity (top N)</param>
         /// <returns>IEnumerable of tuple with actors and quantity of theire main roles</returns>
-        public IEnumerable<(Actor Actor, int mainRolesQuantity)> GetTopMainRolesPopularActors(int quantity)
+        public IEnumerable<(Actor Actor, int MainRolesQuantity)> GetTopMainRolesPopularActors(int quantity)
         {
             var actors = from a in _context.People
                          where a is Actor
