@@ -367,7 +367,7 @@ namespace Business
                         orderby mov.MoviesQuantity descending, sp.SpectaclesQuantity descending
                         select new GenreStats()
                         {
-                            Genre = sp.Genre,
+                            Genre = sp.Genre.Name,
                             SpectaclesQuantity = sp.SpectaclesQuantity,
                             MoviesQuantity = mov.MoviesQuantity
                         };

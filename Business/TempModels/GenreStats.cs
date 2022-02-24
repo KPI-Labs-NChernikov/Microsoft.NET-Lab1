@@ -1,15 +1,8 @@
-﻿using Data.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Business.TempModels
+﻿namespace Business.TempModels
 {
     public record GenreStats
     {
-        public Genre Genre { get; init; }
+        public string Genre { get; init; }
 
         public int MoviesQuantity { get; init; }
 
