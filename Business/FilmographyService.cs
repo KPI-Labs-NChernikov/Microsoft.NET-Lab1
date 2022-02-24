@@ -281,6 +281,7 @@ namespace Business
             return from actorId in actorsIds
                    join actor in allActors
                    on actorId equals actor.Id
+                   orderby actor.GetFullName(), actor.BirthYear
                    select actor;
         }
 
