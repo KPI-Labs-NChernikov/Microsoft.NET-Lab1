@@ -174,7 +174,7 @@ namespace Business
                                            where aop.IsMainRole
                                            select aop
                               on a.Id equals aop.ActorId into j
-                              from subaos in j.DefaultIfEmpty(null)
+                              from subaos in j.DefaultIfEmpty(null)         // left join actors - filtered aops
                               group subaos by a into grouped
                               select new
                               {
@@ -185,12 +185,14 @@ namespace Business
             var top =  (from actorMainRolesQuantity in mainRoles
                     orderby actorMainRolesQuantity.MainRolesQuantity descending
                     select actorMainRolesQuantity).Take(quantity);
-            var result = from a in top
+            return from a in top
                     join atc in _context.ActorTheatricalCharacters on a.Actor.Id equals atc.ActorId into atcJoined
-                    from subatc in atcJoined.DefaultIfEmpty(null)
-                    join tc in _context.TheatricalCharacters on subatc?.TheatricalCharacterId equals tc.Id into tcJoined
-                    from subtc in tcJoined.DefaultIfEmpty(null)
-                    select new
+                    from subatc in atcJoined.DefaultIfEmpty(null)                // left join top
+                                                                                 // - ActorTheatricalCharacters
+                   join tc in _context.TheatricalCharacters on subatc?.TheatricalCharacterId equals tc.Id into tcJoined
+                    from subtc in tcJoined.DefaultIfEmpty(null)                  // left join top+ActorTheatricalCharacters
+                                                                                 // - TheatricalCharacters
+                   select new
                     {
                          a,
                          subtc
@@ -214,7 +216,6 @@ namespace Business
                         },
                         MainRolesQuantity = grouped.Key.MainRolesQuantity
                     };
-            return result;
         }
 
         /// <summary>
@@ -338,9 +339,10 @@ namespace Business
                    on actorId equals actor.Id
                    orderby actor.FullName, actor.BirthYear
                    join atc in _context.ActorTheatricalCharacters on actor.Id equals atc.ActorId into atcJoined
-                   from subatc in atcJoined.DefaultIfEmpty(null)
+                   from subatc in atcJoined.DefaultIfEmpty(null)        // left join prev.joined - ActorTheatricalCharacters
                    join tc in _context.TheatricalCharacters on subatc?.TheatricalCharacterId equals tc.Id into tcJoined
-                   from subtc in tcJoined.DefaultIfEmpty(null)
+                   from subtc in tcJoined.DefaultIfEmpty(null)          // left join prev.joined+ActorTheatricalCharacters
+                                                                        // - TheatricalCharacters
                    select new
                    {
                        actor,
@@ -410,7 +412,7 @@ namespace Business
             var spectaclesStats = from genre in _context.Genres
                              join sp in _context.Spectacles
                                on genre.Id equals sp.GenreId into j
-                             from subsp in j.DefaultIfEmpty(null)
+                             from subsp in j.DefaultIfEmpty(null)           // left join Genres - Spectacles
                              group subsp by genre into grouped
                              select new
                              {
@@ -421,7 +423,7 @@ namespace Business
             var moviesStats = from genre in _context.Genres
                              join mov in _context.Movies
                                on genre.Id equals mov.GenreId into j
-                             from submov in j.DefaultIfEmpty(null)
+                             from submov in j.DefaultIfEmpty(null)           // left join Genres - Movies
                               group submov by genre into grouped
                               select new
                               {
