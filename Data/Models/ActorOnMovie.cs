@@ -2,7 +2,7 @@
 
 namespace Data.Models
 {
-    public class ActorOnMovie : IModel
+    public class ActorOnMovie : IActorOnPerformance
     {
         public int Id { get; set; }
 
@@ -13,5 +13,7 @@ namespace Data.Models
         public string Role { get; set; }
 
         public bool IsMainRole { get; set; }
+
+        public int PerformanceId { get => MovieId; set { MovieId = value; } }
     }
 }
