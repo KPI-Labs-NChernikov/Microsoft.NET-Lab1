@@ -13,7 +13,7 @@ namespace ConsoleApp
             HelperMethods.PrintHeader("Actors");
             foreach (var actor in result)
             {
-                Console.WriteLine($"Name: {actor.GetFullName()}");
+                Console.WriteLine($"Name: {actor.FullName}");
                 Console.WriteLine($"Year of birth: {actor.BirthYear}");
                 Console.WriteLine($"Theatrical character: {actor.TheatricalCharacter}");
                 Console.WriteLine();
@@ -56,7 +56,7 @@ namespace ConsoleApp
             for (int i = 0; i < actors.Count(); i++)
             {
                 var actor = actors.ElementAt(i);
-                menuItems.Add((actor.GetFullName(), () => { chosenId = actor.Id; }));
+                menuItems.Add((actor.FullName, () => { chosenId = actor.Id; }));
             }
             menu.Items = menuItems;
             menu.Print(true);
@@ -65,7 +65,7 @@ namespace ConsoleApp
             {
                 var chosenActor = actors.SingleOrDefault(a => a.Id == chosenId);
                 var filmography = Program.Service.GetActorPerformances(chosenActor.Id);
-                HelperMethods.PrintHeader($"Actor's filmography: {chosenActor.GetFullName()}");
+                HelperMethods.PrintHeader($"Actor's filmography: {chosenActor.FullName}");
                 foreach (var performance in filmography)
                 {
                     Console.Write(performance.Name);
@@ -86,13 +86,13 @@ namespace ConsoleApp
             HelperMethods.PrintHeader("Actors with filmography:");
             foreach (var actor in result)
             {
-                Console.WriteLine(actor.Actor.GetFullName());
-                foreach (var (Role, _, Performance) in actor.Filmography)
+                Console.WriteLine(actor.Actor.FullName);
+                foreach (var item in actor.Filmography)
                 {
-                    Console.Write($"{Role}, ");
-                    Console.Write(Performance.Name);
-                    Console.Write($" ({Performance.GetType().Name}");
-                    if (Performance is Movie movie)
+                    Console.Write($"{item.Role}, ");
+                    Console.Write(item.Performance.Name);
+                    Console.Write($" ({item.Performance.GetType().Name}");
+                    if (item.Performance is Movie movie)
                     {
                         Console.Write($", {movie.Year}");
                     }
@@ -128,7 +128,7 @@ namespace ConsoleApp
                 HelperMethods.PrintHeader($"Spectacle's cast: {chosenSpectacle.Name}");
                 foreach (var performanceRole in cast)
                 {
-                    Console.Write($"{performanceRole.Actor.GetFullName()} -");
+                    Console.Write($"{performanceRole.Actor.FullName} -");
                     Console.Write($" {performanceRole.Role}");
                     if (performanceRole.IsMainRole)
                         Console.Write(" (main)");
@@ -171,7 +171,7 @@ namespace ConsoleApp
             for (int i = 0; i < result.Count(); i++)
             {
                 var actor = result.ElementAt(i);
-                Console.WriteLine($"{i + 1}. {actor.Actor.GetFullName()}");
+                Console.WriteLine($"{i + 1}. {actor.Actor.FullName}");
                 Console.WriteLine($"Year of birth: {actor.Actor.BirthYear}");
                 Console.WriteLine($"Theatrical character: {actor.Actor.TheatricalCharacter}");
                 Console.WriteLine($"Main roles played: {actor.MainRolesQuantity}");
@@ -190,7 +190,7 @@ namespace ConsoleApp
             HelperMethods.PrintHeader($"Results for \"{name}\":");
             foreach (var actor in result)
             {
-                Console.WriteLine($"Name: {actor.GetFullName()}");
+                Console.WriteLine($"Name: {actor.FullName}");
                 Console.WriteLine($"Year of birth: {actor.BirthYear}");
                 Console.WriteLine($"Theatrical character: {actor.TheatricalCharacter}");
                 Console.WriteLine();
@@ -213,7 +213,7 @@ namespace ConsoleApp
             HelperMethods.PrintHeader("Actors that were directors too:");
             foreach (var actor in result)
             {
-                Console.WriteLine($"Name: {actor.GetFullName()}");
+                Console.WriteLine($"Name: {actor.FullName}");
                 Console.WriteLine($"Year of birth: {actor.BirthYear}");
                 Console.WriteLine($"Theatrical character (as actor): {actor.TheatricalCharacter}");
                 Console.WriteLine();
@@ -246,7 +246,7 @@ namespace ConsoleApp
                 HelperMethods.PrintHeader($"Actors that stared in {chosenGenre.Name} films/spectacles:");
                 foreach (var actor in actors)
                 {
-                    Console.WriteLine($"Name: {actor.GetFullName()}");
+                    Console.WriteLine($"Name: {actor.FullName}");
                     Console.WriteLine($"Year of birth: {actor.BirthYear}");
                     Console.WriteLine($"Theatrical character: {actor.TheatricalCharacter}");
                     Console.WriteLine();
@@ -263,9 +263,9 @@ namespace ConsoleApp
             Console.Clear();
             HelperMethods.PrintHeader("Find movies by director's name");
             HelperMethods.PrintHeader($"Results for \"{name}\":");
-            foreach (var (movie, director) in result)
+            foreach (var item in result)
             {
-                Console.WriteLine($"{movie.Name} ({movie.Year}) - Director {director.GetFullName()}");
+                Console.WriteLine($"{item.Movie.Name} ({item.Movie.Year}) - Director {item.Director.FullName}");
                 Console.WriteLine();
             }
             HelperMethods.Quit();

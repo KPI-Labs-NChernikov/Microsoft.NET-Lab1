@@ -8,9 +8,6 @@
 
         public int SpectaclesQuantity { get; init; }
 
-        public int TotalQuantity
-        {
-            get => MoviesQuantity + SpectaclesQuantity;
-        }
+        public int TotalQuantity => MoviesQuantity + SpectaclesQuantity;
     }
 }

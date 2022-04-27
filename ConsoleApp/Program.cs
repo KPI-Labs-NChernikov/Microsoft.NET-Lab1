@@ -27,7 +27,8 @@ namespace ConsoleApp
                 QueriesPrinter.GetMoviesFromYear),
                 ("Get all films and spectacles where actor starred. Sort by: name", 
                 QueriesPrinter.GetActorPerformances),
-                ("Get all actors joined with their roles, then with films/spectacles", QueriesPrinter.GetActorsWithFilmography),
+                ("Get all actors joined with their roles, then with films/spectacles", 
+                QueriesPrinter.GetActorsWithFilmography),
                 ("Get the cast of the spectacle. sort by: type of the role", QueriesPrinter.GetSpectacleCast),
                 ("Get movies grouped by genres. Sort by name of the genre", QueriesPrinter.GetMoviesGroupedByGenres),
                 ("Get top-N actors. Sort by quantity of main roles both in movies and speactacles.", 
@@ -38,7 +39,8 @@ namespace ConsoleApp
                 QueriesPrinter.GetActorsDirectors),
                 ("Get all actors that starred in at least one movie or spectacle with given genre. " +
                 "Sort by fullname, then - year of birth", QueriesPrinter.GetActorsByGenre),
-                ("Find films by director's full name. Sort by film year descending", QueriesPrinter.FindMoviesByDirectorName),
+                ("Find films by director's full name. Sort by film year descending", 
+                QueriesPrinter.FindMoviesByDirectorName),
                 ("Find all films and spectacles by name. Group by type - spectacle or movie", 
                 QueriesPrinter.FindPerformancesByName),
                 ("Get genres with quantity of movies and spectacles of them. " +

@@ -26,8 +26,8 @@ namespace Business
         {
             return _context.People
                 .Where(p => p is Actor)
-                .Select(p => p as Actor)
-                .OrderBy(a => a.GetFullName())
+                .Select(p => (Actor)p)
+                .OrderBy(a => a.FullName)
                 .ThenByDescending(a => a.BirthYear);
         }
 
@@ -92,9 +92,14 @@ namespace Business
                 (k, v) => new ActorWithFilmography()
                 {
                     Actor = k,
-                    Filmography = v.Select(t => (t.Role, t.IsMainRole, t.Performance))
+                    Filmography = v.Select(t => new FilmographyItem 
+                    { 
+                        IsMainRole = t.IsMainRole,
+                        Role = t.Role,
+                        Performance = t.Performance
+                    })
                 }, new ActorEqualityComparer())
-                .OrderBy(g => g.Actor.GetFullName())
+                .OrderBy(g => g.Actor.FullName)
                 .ThenBy(g => g.Actor.BirthYear);
             return actors;
         }
@@ -104,7 +109,7 @@ namespace Business
         /// </summary>
         /// <param name="spectacleId"></param>
         /// <returns>IEnumerable of tuple with actor, role and bool role status</returns>
-        public IEnumerable<(Actor Actor, string Role, bool IsMainRole)> GetSpectacleCast(int spectacleId)
+        public IEnumerable<ActorOnPerformance> GetSpectacleCast(int spectacleId)
         {
             var actors = from a in _context.People
                          where a is Actor
@@ -114,7 +119,12 @@ namespace Business
                    join actor in actors
                    on aos.ActorId equals actor.Id
                    orderby aos.IsMainRole descending
-                   select (actor, aos.Role, aos.IsMainRole);
+                   select new ActorOnPerformance 
+                   { 
+                       Actor = actor, 
+                       Role = aos.Role, 
+                       IsMainRole = aos.IsMainRole
+                   };
         }
 
         /// <summary>
@@ -136,7 +146,7 @@ namespace Business
         /// </summary>
         /// <param name="quantity">needed quantity (top N)</param>
         /// <returns>IEnumerable of tuple with actors and quantity of theire main roles</returns>
-        public IEnumerable<(Actor Actor, int MainRolesQuantity)> GetTopMainRolesPopularActors(int quantity)
+        public IEnumerable<ActorStats> GetTopMainRolesPopularActors(int quantity)
         {
             var actors = from a in _context.People
                          where a is Actor
@@ -187,9 +197,13 @@ namespace Business
             var mainRolesQuantity = from spec in spectaclesMainRolesQuantity
                                     join mov in moviesMainRolesQuantity
                                         on spec.Actor.Id equals mov.Actor.Id
-                                    select (spec.Actor, spec.SpectaclesMainRolesQuantity + mov.MoviesMainRolesQuantity);
+                                    select new ActorStats
+                                    {
+                                        Actor = spec.Actor,
+                                        MainRolesQuantity = spec.SpectaclesMainRolesQuantity + mov.MoviesMainRolesQuantity
+                                    };
             return (from actorMainRolesQuantity in mainRolesQuantity
-                   orderby actorMainRolesQuantity.Item2 descending
+                   orderby actorMainRolesQuantity.MainRolesQuantity descending
                    select actorMainRolesQuantity).Take(quantity);
         }
 
@@ -204,7 +218,7 @@ namespace Business
                 .Where(p => p is Actor)
                 .Select(a => a as Actor);
             return actors
-                .Where(a => a.GetFullName().ToLower().Contains(name.ToLower()));
+                .Where(a => a.FullName.ToLower().Contains(name.ToLower()));
         }
 
         /// <summary>
@@ -281,7 +295,7 @@ namespace Business
             return from actorId in actorsIds
                    join actor in allActors
                    on actorId equals actor.Id
-                   orderby actor.GetFullName(), actor.BirthYear
+                   orderby actor.FullName, actor.BirthYear
                    select actor;
         }
 
@@ -292,15 +306,19 @@ namespace Business
         /// <returns>IEnumerable of Tuple of Movie and Person (its' director) that contains all films 
         /// by director whose fullname contains $name,
         /// sorted by film year descending</returns>
-        public IEnumerable<(Movie Movie, Person Director)> FindMoviesByDirectorName(string name)
+        public IEnumerable<MovieWithDirector> FindMoviesByDirectorName(string name)
         {
             return from mov in _context.Movies
                    join director in _context.People
                    on mov.DirectorId equals director.Id
-                   where director.GetFullName().ToLower()
+                   where director.FullName.ToLower()
                         .Contains(name.ToLower())
                    orderby mov.Year descending
-                   select (mov, director);
+                   select new MovieWithDirector
+                   {
+                       Movie = mov,
+                       Director = director
+                   };
         }
 
         /// <summary>

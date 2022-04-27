@@ -8,6 +8,6 @@ namespace Business.TempModels
     {
         public Actor Actor { get; init; }
 
-        public IEnumerable<(string Role, bool IsMainRole, IPerformance Performance)> Filmography { get; init; }
+        public IEnumerable<FilmographyItem> Filmography { get; init; }
     }
 }
