@@ -15,7 +15,7 @@ namespace ConsoleApp
             {
                 Console.WriteLine($"Name: {actor.FullName}");
                 Console.WriteLine($"Year of birth: {actor.BirthYear}");
-                Console.WriteLine($"Theatrical character: {actor.TheatricalCharacter}");
+                Console.WriteLine($"Theatrical character: {actor.TheatricalCharacters}");
                 Console.WriteLine();
             }
             HelperMethods.Quit();
@@ -173,7 +173,7 @@ namespace ConsoleApp
                 var actor = result.ElementAt(i);
                 Console.WriteLine($"{i + 1}. {actor.Actor.FullName}");
                 Console.WriteLine($"Year of birth: {actor.Actor.BirthYear}");
-                Console.WriteLine($"Theatrical character: {actor.Actor.TheatricalCharacter}");
+                Console.WriteLine($"Theatrical character: {actor.Actor.TheatricalCharacters}");
                 Console.WriteLine($"Main roles played: {actor.MainRolesQuantity}");
                 Console.WriteLine();
             }
@@ -192,7 +192,7 @@ namespace ConsoleApp
             {
                 Console.WriteLine($"Name: {actor.FullName}");
                 Console.WriteLine($"Year of birth: {actor.BirthYear}");
-                Console.WriteLine($"Theatrical character: {actor.TheatricalCharacter}");
+                Console.WriteLine($"Theatrical character: {actor.TheatricalCharacters}");
                 Console.WriteLine();
             }
             HelperMethods.Quit();
@@ -215,7 +215,7 @@ namespace ConsoleApp
             {
                 Console.WriteLine($"Name: {actor.FullName}");
                 Console.WriteLine($"Year of birth: {actor.BirthYear}");
-                Console.WriteLine($"Theatrical character (as actor): {actor.TheatricalCharacter}");
+                Console.WriteLine($"Theatrical character (as actor): {actor.TheatricalCharacters}");
                 Console.WriteLine();
             }
             HelperMethods.Quit();
@@ -248,7 +248,7 @@ namespace ConsoleApp
                 {
                     Console.WriteLine($"Name: {actor.FullName}");
                     Console.WriteLine($"Year of birth: {actor.BirthYear}");
-                    Console.WriteLine($"Theatrical character: {actor.TheatricalCharacter}");
+                    Console.WriteLine($"Theatrical character: {actor.TheatricalCharacters}");
                     Console.WriteLine();
                 }
                 HelperMethods.Quit();

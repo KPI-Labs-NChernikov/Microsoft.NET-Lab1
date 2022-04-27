@@ -2,7 +2,7 @@
 
 namespace Data.Models
 {
-    public abstract class Person : IModel
+    public class Person : IModel
     {
         public int Id { get; set; }
 

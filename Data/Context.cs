@@ -1,5 +1,4 @@
-﻿using Data.Interfaces;
-using Data.Models;
+﻿using Data.Models;
 using System.Collections.Generic;
 
 namespace Data
@@ -17,5 +16,12 @@ namespace Data
         public ICollection<ActorOnMovie> ActorsOnMovies { get; set; } = new List<ActorOnMovie>();
 
         public ICollection<ActorOnSpectacle> ActorsOnSpectacles { get; set; } = new List<ActorOnSpectacle>();
+
+        public ICollection<PersonOnProfession> PersonOnProfessions { get; set; } = new List<PersonOnProfession>();
+
+        public ICollection<TheatricalCharacter> TheatricalCharacters { get; set; } = new List<TheatricalCharacter>();
+
+        public ICollection<ActorTheatricalCharacter> ActorTheatricalCharacters { get; set; } 
+            = new List<ActorTheatricalCharacter>();
     }
 }

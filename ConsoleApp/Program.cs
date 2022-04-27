@@ -1,5 +1,6 @@
 ﻿using Business;
 using ConsoleApp.Data;
+using ConsoleApp.Interfaces;
 using Data;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace ConsoleApp
         static void Main(string[] args)
         {
             Context = new Context();
-            var seeder = new DataSeeder(Context);
+            IDataSeeder seeder = new DataSeeder(Context);
             seeder.SeedData();
             Service = new FilmographyService(Context);
             IEnumerable<(string, Action)> mainMenuItems = new List<(string, Action)>()
@@ -35,7 +36,7 @@ namespace ConsoleApp
                 QueriesPrinter.GetTopMainRolesPopularActors),
                 ("Find actors by fullname", QueriesPrinter.FindActorByName),
                 ("Get genres that were used both in movies and spectacles", QueriesPrinter.GetUniversalGenres),
-                ("Get all actors that were directors at least in one movie. Sort by year of birth", 
+                ("Get all actors that are directors too. Sort by year of birth", 
                 QueriesPrinter.GetActorsDirectors),
                 ("Get all actors that starred in at least one movie or spectacle with given genre. " +
                 "Sort by fullname, then - year of birth", QueriesPrinter.GetActorsByGenre),
